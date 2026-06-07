@@ -4,7 +4,8 @@
   "description": "Figma plugin: export iOS screenshots named by device family + size",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "watch": "tsc -p tsconfig.json --watch"
+    "watch": "tsc -p tsconfig.json --watch",
+    "vendor:jszip": "node scripts/inline-vendor.mjs"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.128.0",

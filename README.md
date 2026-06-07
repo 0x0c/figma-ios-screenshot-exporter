@@ -106,6 +106,15 @@ Then load the plugin in Figma via **Plugins → Development → Import plugin fr
 
 The UI strings live in the `I18N` dictionary in [`ui.html`](ui.html). Add a new entry (e.g. `zh`) alongside `ja`/`en` and add a matching `<option>` to the `#lang` selector.
 
-### Network access
+### Bundled JSZip (no network access)
 
-The manifest allows loading [JSZip](https://stuk.github.io/jszip/) from `cdnjs.cloudflare.com` to bundle multiple exports into one ZIP.
+[JSZip](https://stuk.github.io/jszip/) is bundled (inlined) into `ui.html`, so the
+plugin declares **no network access** in `manifest.json`. The source is kept at
+`vendor/jszip.min.js`; to update it, run:
+
+```sh
+npm run vendor:jszip
+```
+
+JSZip is used under the MIT license — see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+This project itself is MIT licensed — see [LICENSE](LICENSE).
