@@ -1,5 +1,7 @@
 # iOS Screenshot Exporter
 
+![cover](assets/cover.png)
+
 A Figma plugin that exports selected layers as App Store screenshots, automatically named by **device family + screen size** so they're ready to upload to App Store Connect.
 
 It reads each layer's exported pixel size, matches it against the known App Store Connect display sizes, and produces files like:
