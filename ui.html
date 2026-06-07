@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg: var(--figma-color-bg, #fff);
+    --text: var(--figma-color-text, #1e1e1e);
+    --text-dim: var(--figma-color-text-secondary, #6b6b6b);
+    --input-bg: var(--figma-color-bg-secondary, #f5f5f5);
+    --accent: var(--figma-color-bg-brand, #0d99ff);
+    --accent-text: var(--figma-color-text-onbrand, #fff);
+    --warn: var(--figma-color-text-warning, #b25b00);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 12px 14px 14px;
+    font-family: "Inter", -apple-system, "Helvetica Neue", sans-serif;
+    font-size: 11px; color: var(--text); background: var(--bg);
+  }
+  .field { margin-bottom: 10px; }
+  label { display: block; margin-bottom: 4px; color: var(--text-dim); font-weight: 500; }
+  select, input[type="text"], input[type="number"] {
+    width: 100%; height: 28px; padding: 0 8px; font-size: 11px;
+    color: var(--text); background: var(--input-bg);
+    border: 1px solid transparent; border-radius: 5px; outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+  .row { display: flex; gap: 8px; }
+  .row > .field { flex: 1; }
+  .check { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .check input { width: auto; height: auto; }
+  .check label { margin: 0; }
+  .hint { margin-top: 3px; font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+  .preview {
+    margin: 4px 0 10px; padding: 8px; background: var(--input-bg);
+    border-radius: 5px; font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 10px; color: var(--text-dim); white-space: pre; overflow-x: auto;
+  }
+  button {
+    width: 100%; height: 32px; font-size: 11px; font-weight: 600;
+    color: var(--accent-text); background: var(--accent);
+    border: none; border-radius: 6px; cursor: pointer;
+  }
+  button:active { opacity: 0.85; }
+  #status { margin-top: 8px; min-height: 14px; font-size: 10px; color: var(--text-dim); }
+  #status.warn { color: var(--warn); white-space: pre-line; }
+</style>
+</head>
+<body>
+  <div class="field">
+    <label data-i18n="langLabel"></label>
+    <select id="lang">
+      <option value="ja">日本語</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label data-i18n="localeLabel"></label>
+    <input type="text" id="locale" value="en-US" data-i18n-ph="localePh" />
+  </div>
+
+  <div class="check">
+    <input type="checkbox" id="includeName" checked />
+    <label for="includeName" data-i18n="includeName"></label>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label data-i18n="separator"></label>
+      <input type="text" id="separator" value="_" maxlength="3" />
+    </div>
+    <div class="field">
+      <label data-i18n="padding"></label>
+      <input type="number" id="padding" value="2" min="1" max="5" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label data-i18n="format"></label>
+    <select id="format">
+      <option value="PNG">PNG</option>
+      <option value="JPG">JPG</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label data-i18n="tolerance"></label>
+    <input type="number" id="tolerance" value="0" min="0" />
+    <div class="hint" data-i18n="toleranceHint"></div>
+  </div>
+
+  <label data-i18n="preview"></label>
+  <div class="preview" id="preview"></div>
+
+  <button id="export" data-i18n="exportBtn"></button>
+  <div id="status"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // ---- String dictionary (en/ja) -------------------------------------
+  const I18N = {
+    ja: {
+      langLabel: "UIの言語 / User Interface Language",
+      localeLabel: "ロケール（先頭に付与・空欄で無し）",
+      localePh: "例: en-US",
+      includeName: "レイヤー名を含める（例: iPhone69_01_Home）",
+      separator: "区切り文字",
+      padding: "ゼロ埋め桁数",
+      format: "形式",
+      tolerance: "行判定の許容差 px（0=自動）",
+      toleranceHint: "読み順の連番はデバイスファミリーごとにリセットされます。",
+      preview: "プレビュー",
+      exportBtn: "エクスポート",
+      exporting: "エクスポート中…",
+      progress: (d, t) => `エクスポート中… ${d}/${t}`,
+      zipping: "ZIP を作成中…",
+      done: (n) => `完了：${n} 件をエクスポートしました。`,
+      doneWarn: (n, w) => `完了：${n} 件。ただし規定外サイズ ${w} 件:`,
+      warnItem: (o) => `${o.name}（${o.w}x${o.h}px）は規定サイズに不一致`,
+      errPrefix: "⚠ ",
+      noTargets:
+        "対象が見つかりません。書き出すレイヤーを選択するか、ページ直下にレイヤーを配置してください。",
+      exportFailed: (d) => `エクスポート失敗: ${d}`,
+    },
+    en: {
+      langLabel: "UIの言語 / User Interface Language",
+      localeLabel: "Locale (prefixed; leave blank for none)",
+      localePh: "e.g. en-US",
+      includeName: "Include layer name (e.g. iPhone69_01_Home)",
+      separator: "Separator",
+      padding: "Zero-pad digits",
+      format: "Format",
+      tolerance: "Row grouping tolerance px (0 = auto)",
+      toleranceHint: "Sequence numbers reset per device family in reading order.",
+      preview: "Preview",
+      exportBtn: "Export",
+      exporting: "Exporting…",
+      progress: (d, t) => `Exporting… ${d}/${t}`,
+      zipping: "Creating ZIP…",
+      done: (n) => `Done: exported ${n} file(s).`,
+      doneWarn: (n, w) => `Done: ${n} file(s). ${w} with non-standard size:`,
+      warnItem: (o) => `${o.name} (${o.w}x${o.h}px) doesn't match a standard size`,
+      errPrefix: "⚠ ",
+      noTargets:
+        "No targets found. Select layers to export, or place layers directly on the page.",
+      exportFailed: (d) => `Export failed: ${d}`,
+    },
+  };
+
+  // Pick the initial language from navigator.language (English unless Japanese)
+  let lang = (navigator.language || "en").toLowerCase().startsWith("ja")
+    ? "ja"
+    : "en";
+
+  function t(key, ...args) {
+    const v = (I18N[lang] || I18N.en)[key];
+    return typeof v === "function" ? v(...args) : v;
+  }
+
+  function applyStaticI18n() {
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      el.textContent = t(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+      el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));
+    });
+  }
+
+  function buildPreview() {
+    const sep = $("separator").value || "_";
+    const loc = $("locale").value.trim();
+    const pad = (n) => String(n).padStart(parseInt($("padding").value, 10) || 2, "0");
+    const ext = $("format").value === "JPG" ? "jpg" : "png";
+    const withName = $("includeName").checked;
+    const rows = [
+      ["iPhone69", 1, "Home"],
+      ["iPhone69", 2, "Library"],
+      ["iPad13", 1, "Home"],
+    ];
+    $("preview").textContent = rows
+      .map(([label, n, name]) => {
+        let s = `${label}${sep}${pad(n)}`;
+        if (withName) s += `${sep}${name}`;
+        if (loc) s = `${loc}${sep}${s}`;
+        return s + "." + ext;
+      })
+      .join("\n");
+  }
+  ["locale", "separator", "padding", "format", "includeName"].forEach((id) =>
+    $(id).addEventListener("input", buildPreview)
+  );
+
+  // Apply the initial language and handle manual switching
+  $("lang").value = lang;
+  $("lang").addEventListener("change", () => {
+    lang = $("lang").value;
+    applyStaticI18n();
+  });
+  applyStaticI18n();
+  buildPreview();
+
+  $("export").onclick = () => {
+    const options = {
+      locale: $("locale").value.trim(),
+      includeName: $("includeName").checked,
+      separator: $("separator").value || "_",
+      padding: parseInt($("padding").value, 10) || 2,
+      format: $("format").value,
+      scale: 1,
+      rowTolerance: parseFloat($("tolerance").value) || 0,
+    };
+    $("status").className = "";
+    $("status").textContent = t("exporting");
+    parent.postMessage({ pluginMessage: { type: "export", options } }, "*");
+  };
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  onmessage = async (event) => {
+    const msg = event.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === "progress") {
+      $("status").textContent = t("progress", msg.done, msg.total);
+      return;
+    }
+    if (msg.type === "error") {
+      $("status").className = "warn";
+      const body =
+        msg.messageKey === "exportFailed"
+          ? t("exportFailed", msg.detail)
+          : t(msg.messageKey);
+      $("status").textContent = t("errPrefix") + body;
+      return;
+    }
+    if (msg.type === "files") {
+      const files = msg.files;
+      if (files.length === 1) {
+        downloadBlob(new Blob([files[0].bytes]), files[0].name);
+      } else {
+        $("status").textContent = t("zipping");
+        const zip = new JSZip();
+        files.forEach((f) => zip.file(f.name, f.bytes));
+        const content = await zip.generateAsync({ type: "blob" });
+        downloadBlob(content, "screenshots.zip");
+      }
+      const warns = msg.warnings || [];
+      if (warns.length) {
+        $("status").className = "warn";
+        $("status").textContent =
+          t("doneWarn", files.length, warns.length) +
+          "\n" +
+          warns.map((w) => t("warnItem", w)).join("\n");
+      } else {
+        $("status").className = "";
+        $("status").textContent = t("done", files.length);
+      }
+    }
+  };
+</script>
+</body>
+</html>

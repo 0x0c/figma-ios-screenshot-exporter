@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code local settings (not shared)
+.claude/settings.local.json
+
+# Output artifacts
+*.zip
+screenshots/
+
+# Dependencies / build artifacts
+node_modules/
+code.js        # generated from code.ts by tsc (do not edit directly)
+*.tsbuildinfo
