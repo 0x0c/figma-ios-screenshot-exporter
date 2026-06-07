@@ -7,5 +7,6 @@
   "networkAccess": {
     "allowedDomains": ["none"]
   },
-  "id": "1645302169148306990"
+  "id": "1645302169148306990",
+  "documentAccess": "dynamic-page"
 }
