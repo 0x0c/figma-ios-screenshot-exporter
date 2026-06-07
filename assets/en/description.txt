@@ -1,0 +1,20 @@
+iOS Screenshot Exporter turns your Figma layers into App Store–ready screenshots,
+named automatically so they're ready to upload to App Store Connect.
+
+Select the layers you want to export and the plugin reads each one's exported
+pixel size, matches it to the App Store Connect display families (e.g. iPhone69,
+iPad13), and names the files for you — no manual renaming.
+
+Features
+• Exports the selected layers as-is (any exportable node, not just frames).
+• Automatic device-family naming from the exported resolution.
+• Reading-order sequence numbers (top→bottom, left→right), reset per family.
+• Configurable names: optional locale prefix, layer name, separator, zero-padding.
+• PNG or JPG, exported at 1x.
+• Bilingual UI (English / Japanese), auto-detected with a manual switch.
+• Single file downloads directly; multiple files download as one ZIP.
+
+Example output:
+en-US_iPhone69_01_Home.png
+en-US_iPhone69_02_Library.png
+en-US_iPad13_01_Home.png
