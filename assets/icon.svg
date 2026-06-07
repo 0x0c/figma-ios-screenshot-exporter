@@ -1,0 +1,28 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2AA9FF"/>
+      <stop offset="1" stop-color="#0A5BFF"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="44" y1="26" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EAF4FF"/>
+      <stop offset="1" stop-color="#C9E2FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- app background -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <!-- screenshot card -->
+  <rect x="34" y="20" width="60" height="76" rx="12" fill="#FFFFFF"/>
+  <rect x="42" y="28" width="44" height="60" rx="6" fill="url(#screen)"/>
+
+  <!-- image glyph: sun + mountains -->
+  <circle cx="55" cy="44" r="5" fill="#FFC24B"/>
+  <path d="M46 80 L60 60 L70 72 L76 64 L82 80 Z" fill="#3E8BFF"/>
+
+  <!-- export arrow badge -->
+  <circle cx="92" cy="92" r="18" fill="#0A5BFF" stroke="#FFFFFF" stroke-width="4"/>
+  <path d="M92 83 V99 M84 91 L92 99 L100 91" stroke="#FFFFFF" stroke-width="4.5"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
