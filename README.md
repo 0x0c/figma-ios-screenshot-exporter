@@ -45,6 +45,30 @@ Exported pixel sizes (portrait) are matched to these families:
 
 The full size→label table lives in [`SIZE_LABELS`](code.ts). Because export is always 1x, the source layers must already be at the native screenshot resolution to match a family; otherwise they fall back to an `UNKNOWN…` label.
 
+## Installation (local)
+
+This plugin isn't published to the Figma Community, so install it as a local development plugin. You need the **Figma desktop app** (importing a manifest isn't available in the browser) and **Node.js**.
+
+1. Clone the repository:
+
+2. Install dependencies:
+
+   ```sh
+   npm install
+   ```
+
+3. Build `code.js` (it is git-ignored, so you must build before importing):
+
+   ```sh
+   npm run build
+   ```
+
+4. In the Figma desktop app, open any file and go to **Menu → Plugins → Development → Import plugin from manifest…**, then select this repo's `manifest.json`.
+
+5. Run it anytime via **Menu → Plugins → Development → iOS Screenshot Exporter**.
+
+> To keep editing the source, run `npm run watch` so `code.js` rebuilds on save, then use **Plugins → Development → Hot reload plugin** (or re-run the plugin) to pick up changes.
+
 ## Usage
 
 1. In Figma, open the plugin.
